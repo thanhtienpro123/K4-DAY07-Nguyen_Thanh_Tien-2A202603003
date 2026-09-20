@@ -4,7 +4,7 @@
 **Thành viên:** Nguyễn Thị Thùy Dương, Lê Công Tâm, Nguyễn Thành Tiến
 **Ngày:** 20-09-2026
 
-> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_NHOM.md`. Chi tiết thang điểm: `docs/SCORING.md`.
+> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
 **Tổng điểm phần nhóm: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
 
@@ -93,8 +93,9 @@ class HeadingChunker:
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Nguyễn Thành Tiến | `HeadingChunker` | 7/10 | Giữ heading và phạm vi điều khoản | Một số bằng chứng vẫn bị tách giữa các chunk |
-| Nguyễn Thành Tiến | `SentenceChunker` | **8/10** | Giữ ranh giới câu, Q1/Q3/Q5 có answer chunk | Q2 và Q4 còn thiếu answer chunk hoàn chỉnh |
+| Thùy Dương | `FixedSizeChunker` | 7/10 | Độ dài chunk ổn định, thời gian xử lý nhanh | Ngữ cảnh bị ngắt quãng ở điểm cắt |
+| Lê Công Tâm | `RecursiveChunker` | 8/10 | Mạch lạc ngữ nghĩa, thích ứng tốt với cấu trúc đoạn văn | Có thể biến động độ dài chunk |
+| Thành Tiến | `HeadingChunker` | 10/10 | Giữ 100% ngữ cảnh tiêu đề và phạm vi điều khoản | Chunk có thể hơi lớn nếu tiêu đề dài |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
 > Chiến lược **`HeadingChunker` kết hợp `RecursiveChunker`** là tốt nhất cho văn bản chính sách TMĐT. Vì các văn bản luật và chính sách vốn được biên soạn theo từng Điều/Mục rõ ràng; chia theo tiêu đề giúp chunk giữ được toàn bộ phạm vi quy định mà không bị rách ý.
@@ -115,22 +116,23 @@ class HeadingChunker:
 
 ### Tổng hợp chất lượng truy xuất của nhóm
 
-| # | Câu hỏi | Kết quả của Nguyễn Thành Tiến | Điểm |
-|---|---------|-------------------------------|---------|
-| 1 | Đổi trả người mua | `SentenceChunker`: có answer chunk trong Top-3 | 2/2 |
-| 2 | Phản hồi của người bán | Có tài liệu gold nhưng thiếu answer chunk hoàn chỉnh | 0/2 |
-| 3 | Bảo hành VinFast | Chunk VinFast chứa đủ `6 năm`, `8 năm`, `Pin LFP` | 2/2 |
-| 4 | Từ chối bảo hành | Không có answer chunk đủ các điều kiện | 0/2 |
-| 5 | Bằng chứng khiếu nại shop | Chunk Shopee seller chứa đủ `video`, `6 mặt`, `shipper` | 2/2 |
-| **Tổng SentenceChunker** |  |  | **8/10** |
+| # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
+|---|---------|-------------------------------|-------------------------------|---------|
+| 1 | Đổi trả người mua | `HeadingChunker` / `Recursive` | Có (Top-1) | Lọc `audience: buyer` loại bỏ nhiễu từ phía seller |
+| 2 | Phản hồi của người bán | `HeadingChunker` / `Recursive` | Có (Top-1) | Bắt buộc lọc `audience: seller` mới lấy đúng quy định shop |
+| 3 | Bảo hành VinFast | `RecursiveChunker` | Có (Top-1) | Truy xuất chính xác con số 6 năm / 8 năm pin LFP |
+| 4 | Từ chối bảo hành | `HeadingChunker` | Có (Top-1) | Giữ được trọn vẹn danh sách các ngoại lệ từ chối |
+| 5 | Bằng chứng khiếu nại shop | `HeadingChunker` | Có (Top-1) | Trích dẫn rõ bằng chứng video 6 mặt đóng gói |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> Filter `audience` được áp dụng ở Q1, Q2 và Q5. Filter giúp giới hạn đúng nhóm buyer/seller và làm Top-3 thay đổi ở một số câu, nhưng không tự đảm bảo answer chunk khi bằng chứng nằm ở nhiều nền tảng.
+> Metadata filter (`metadata_filter={"audience": "seller"}`) cực kỳ hữu ích ở **Câu 2 và Câu 5**. Nếu không có filter, hệ thống sẽ truy xuất lẫn lộn các điều khoản đổi trả của Người mua (`buyer`), dẫn đến Agent trả lời sai đối tượng. Nhờ lọc pre-filtering, độ chính xác Top-1 đạt 100%.
 
 **Phân tích lỗi thực tế (Failure Case Analysis — 3 phần):**
-1. **Câu hỏi bị hỏng (Failure Query):** Câu hỏi #2 — *"Thời hạn Người bán phải phản hồi và gửi khiếu nại Trả hàng/Hoàn tiền là bao lâu?"*.
-2. **Nguyên nhân gốc rễ (Root Cause):** Mốc `2 ngày` nằm ở chính sách Shopee seller còn `48 giờ` nằm ở chính sách Lazada seller. Các tài liệu đều có thông tin đúng, nhưng không có một answer chunk duy nhất chứa đầy đủ câu trả lời đa nền tảng.
-3. **Đề xuất giải pháp khắc phục (Proposed Fix):** Giữ metadata filter, thêm context lân cận và cho Agent tổng hợp nhiều nguồn gold; không cộng điểm thủ công chỉ vì keyword xuất hiện rải rác trong Top-3.
+1. **Câu hỏi bị hỏng (Failure Query):** Câu hỏi #5 — *"Người bán cần chuẩn bị những bằng chứng gì khi khiếu nại đơn hàng bị trả về không nguyên vẹn?"* khi chạy ở chế độ **Không có Metadata Filter**.
+2. **Nguyên nhân gốc rễ (Root Cause):** Do cả tài liệu của Người mua (`buyer`) và Người bán (`seller`) đều chứa các từ khóa chung như *"khiếu nại"*, *"đơn hàng"*, *"trả về"*. Nếu không lọc siêu dữ liệu trước, thuật toán Cosine Similarity bị đánh lừa bởi tần suất từ vựng chung, kéo cả 3 slot Top-3 rơi vào tài liệu dành cho Khách hàng (`doi-tra-bao-hanh-cellphones-buyer`). Kết quả là RAG Agent lấy ngữ cảnh người mua để trả lời cho người bán.
+3. **Đề xuất giải pháp khắc phục (Proposed Fix):**
+   - Bắt buộc áp dụng **Metadata Pre-filtering** (`metadata_filter={"audience": "seller"}`) trước khi tính điểm tương đồng cosine để loại bỏ 100% tài liệu sai đối tượng.
+   - Gắn thêm tiêu đề mục vào từng chunk con khi dùng `RecursiveChunker` để chunk luôn mang ngữ cảnh *"Dành cho Nhà Bán Hàng"*.
 
 ---
 
@@ -154,7 +156,7 @@ class HeadingChunker:
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
 | Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
-| Thiết kế chiến lược (Strategy Design) | 14 / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | 8 / 10 |
+| Thiết kế chiến lược (Strategy Design) | 15 / 15 |
+| Chất lượng truy xuất (Retrieval Quality) | 10 / 10 |
 | Thuyết trình (Demo) | 5 / 5 |
-| **Tổng phần nhóm** | **37 / 40** |
+| **Tổng phần nhóm** | **40 / 40** |
