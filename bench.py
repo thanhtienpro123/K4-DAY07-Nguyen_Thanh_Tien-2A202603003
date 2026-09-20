@@ -4,8 +4,9 @@ import argparse
 import re
 import sys
 import unicodedata
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from src.chunking import RecursiveChunker, SentenceChunker
 from src.embeddings import GeminiEmbedder, LocalEmbedder, OpenAIEmbedder, _mock_embed
@@ -16,43 +17,58 @@ from src.store import EmbeddingStore
 BENCHMARK_QUERIES = [
     {
         "id": 1,
-        "query": "Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong bao nhiêu ngày kể từ khi giao hàng thành công?",
+        "query": "Thời hạn yêu cầu đổi trả hoặc hoàn tiền dành cho người mua là bao nhiêu ngày?",
         "filter": {"audience": "buyer"},
-        "gold_answer": "Theo chính sách Shopee, người mua có thể gửi yêu cầu trả hàng/hoàn tiền trong vòng 15 ngày kể từ khi đơn hàng được cập nhật giao hàng thành công.",
-        "target_keywords": ["15 ngày", "trả hàng", "hoàn tiền"],
-        "expected_docs": ["shopee-return-regulation"],
+        "gold_answer": "Theo chính sách đổi trả trong corpus, người mua được đổi mới hoặc yêu cầu hỗ trợ trong thời hạn được quy định, thường 30 ngày đầu nếu lỗi do nhà sản xuất.",
+        "target_keywords": ["30 ngày", "đổi", "hoàn tiền"],
+        "expected_docs": [
+            "doi-tra-bao-hanh-cellphones-buyer",
+            "doi-tra-bao-hanh-tgdd-buyer",
+            "doi-tra-bao-hanh-lazada-buyer",
+        ],
     },
     {
         "id": 2,
-        "query": "Người bán Shopee phải phản hồi quyết định trả hàng hoặc hoàn tiền trong bao lâu?",
-        "filter": {"audience": "both"},
-        "gold_answer": "Người bán phải gửi phản hồi trong vòng 02 ngày lịch kể từ khi nhận được thông báo của Shopee.",
-        "target_keywords": ["02 ngày", "phản hồi", "Người Bán"],
-        "expected_docs": ["shopee-return-refund-policy"],
+        "query": "Thời hạn Người bán phải phản hồi và gửi khiếu nại Trả hàng/Hoàn tiền là bao lâu?",
+        "filter": {"audience": "seller"},
+        "gold_answer": "Người bán có thời hạn 2 ngày hoặc 48 giờ tùy nền tảng để xử lý và gửi khiếu nại.",
+        "target_keywords": ["2 ngày", "48 giờ", "khiếu nại"],
+        "expected_docs": [
+            "doi-tra-bao-hanh-shopee-seller",
+            "doi-tra-bao-hanh-lazada-seller",
+            "doi-tra-bao-hanh-tiki-seller",
+        ],
     },
     {
         "id": 3,
-        "query": "Người bán TikTok có thể gửi khiếu nại trong bao nhiêu ngày đối với yêu cầu trả hàng?",
-        "filter": {"audience": "seller"},
-        "gold_answer": "Đối với trả hàng gửi tại bưu cục hoặc lấy hàng, người bán có thể gửi khiếu nại trong vòng 7 ngày kể từ khi nhận hàng trả về; với trả hàng tự sắp xếp là 15 ngày.",
-        "target_keywords": ["15 ngày", "khiếu nại", "người bán"],
-        "expected_docs": ["tiktok-return-refund"],
+        "query": "Thời hạn bảo hành xe máy điện và Pin LFP VinFast là bao nhiêu năm?",
+        "filter": None,
+        "gold_answer": "Xe máy điện được bảo hành 6 năm không giới hạn km; pin LFP được bảo hành lên tới 8 năm.",
+        "target_keywords": ["6 năm", "8 năm", "Pin LFP"],
+        "expected_docs": ["doi-tra-bao-hanh-vinfast-buyer"],
     },
     {
         "id": 4,
-        "query": "Người bán TikTok cần quay video mở kiện hàng và thể hiện những gì khi khiếu nại hàng trả về?",
-        "filter": {"audience": "seller"},
-        "gold_answer": "Cần cung cấp video mở kiện hàng liên tục, hiển thị thông tin đơn trả hàng, hình ảnh tất cả 6 mặt của kiện hàng và quá trình mở hàng.",
-        "target_keywords": ["video mở kiện hàng", "6 mặt", "kiện hàng"],
-        "expected_docs": ["tiktok-return-refund"],
+        "query": "Các trường hợp nào thiết bị di động bị từ chối bảo hành hoặc bị trừ phí khi đổi trả?",
+        "filter": None,
+        "gold_answer": "Có thể bị từ chối khi tự tháo mở sửa chữa, rơi vỡ hoặc ngập nước; có thể bị trừ phí nếu sản phẩm không lỗi hoặc thiếu hộp và phụ kiện.",
+        "target_keywords": ["rơi vỡ", "tháo", "trừ phí"],
+        "expected_docs": [
+            "doi-tra-bao-hanh-tgdd-buyer",
+            "doi-tra-bao-hanh-cellphones-buyer",
+        ],
     },
     {
         "id": 5,
-        "query": "Sau khi yêu cầu trả hàng hoàn tiền được chấp nhận, mã giảm giá Shopee được hoàn lại trong bao lâu?",
-        "filter": {"audience": "buyer"},
-        "gold_answer": "Mã giảm giá được hoàn lại trong vòng 48 giờ, không kể thứ 7, chủ nhật và ngày lễ, kể từ khi yêu cầu được chấp nhận hoàn tiền.",
-        "target_keywords": ["48 giờ", "hoàn tiền", "Mã giảm giá"],
-        "expected_docs": ["shopee-return-regulation"],
+        "query": "Người bán cần chuẩn bị những bằng chứng gì khi khiếu nại đơn hàng bị trả về không nguyên vẹn?",
+        "filter": {"audience": "seller"},
+        "gold_answer": "Người bán cần video mở kiện hàng, thể hiện 6 mặt kiện hàng và tình trạng sản phẩm bên trong, tốt nhất có bằng chứng giao nhận.",
+        "target_keywords": ["video", "6 mặt", "shipper"],
+        "expected_docs": [
+            "doi-tra-bao-hanh-shopee-seller",
+            "doi-tra-bao-hanh-lazada-seller",
+            "doi-tra-bao-hanh-tiki-seller",
+        ],
     },
 ]
 
@@ -62,8 +78,9 @@ class HeadingChunker:
 
     HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$", re.MULTILINE)
 
-    def __init__(self, max_chars: int = 1200) -> None:
+    def __init__(self, max_chars: int = 1200, overlap_sentences: int = 1) -> None:
         self.max_chars = max(1, max_chars)
+        self.overlap_sentences = max(0, overlap_sentences)
         self.sentence_chunker = SentenceChunker(max_sentences_per_chunk=4)
         self.recursive_chunker = RecursiveChunker(chunk_size=self.max_chars)
 
@@ -96,7 +113,12 @@ class HeadingChunker:
             return [section]
 
         chunks: list[str] = []
-        for sentence_chunk in self.sentence_chunker.chunk(body):
+        sentence_chunks = self.sentence_chunker.chunk(body)
+        for index, sentence_chunk in enumerate(sentence_chunks):
+            if self.overlap_sentences and index:
+                previous = sentence_chunks[index - 1].split()
+                prefix_overlap = " ".join(previous[-self.overlap_sentences * 20 :])
+                sentence_chunk = f"{prefix_overlap} {sentence_chunk}"
             candidate = f"{prefix}{sentence_chunk}".strip()
             if len(candidate) <= self.max_chars:
                 chunks.append(candidate)
@@ -125,8 +147,13 @@ def load_documents(data_dir: Path, chunker: Any) -> list[Document]:
     for path in sorted(data_dir.glob("*.md")):
         metadata, content = parse_frontmatter(path.read_text(encoding="utf-8-sig"))
         metadata["doc_id"] = path.stem
-        for index, chunk in enumerate(chunker.chunk(content)):
-            documents.append(Document(f"{path.stem}#{index}", chunk, metadata.copy()))
+        chunks = chunker.chunk(content)
+        for index, chunk in enumerate(chunks):
+            context_parts = chunks[max(0, index - 1) : index + 2]
+            contextual_chunk = "\n\n".join(context_parts)
+            documents.append(
+                Document(f"{path.stem}#{index}", contextual_chunk, metadata.copy())
+            )
     return documents
 
 
@@ -146,7 +173,7 @@ def select_embedder(backend: str) -> tuple[Callable[[str], list[float]], str, bo
         try:
             embedder = LocalEmbedder()
             return embedder, "local sentence-transformers", False
-        except Exception as error:
+        except (ImportError, OSError, RuntimeError) as error:
             print(f"WARNING: real local embedder unavailable ({error}).")
             return _mock_embed, "mock embeddings fallback", True
     raise ValueError(f"Unsupported embedding backend: {backend}")
@@ -160,6 +187,16 @@ def normalize(value: str) -> str:
 def keyword_hits(content: str, keywords: list[str]) -> list[str]:
     normalized = normalize(content)
     return [keyword for keyword in keywords if normalize(keyword) in normalized]
+
+
+def lexical_overlap(query: str, content: str) -> float:
+    query_terms = {
+        term for term in re.findall(r"\w+", normalize(query)) if len(term) > 2
+    }
+    content_terms = set(re.findall(r"\w+", normalize(content)))
+    if not query_terms:
+        return 0.0
+    return len(query_terms & content_terms) / len(query_terms)
 
 
 def evaluate_result(
@@ -185,9 +222,22 @@ def retrieve(
     store: EmbeddingStore, benchmark: dict[str, Any], use_filter: bool
 ) -> list[dict[str, Any]]:
     metadata_filter = benchmark["filter"] if use_filter else None
-    return store.search_with_filter(
+    results = store.search_with_filter(
         benchmark["query"], top_k=3, metadata_filter=metadata_filter
     )
+    # Keep semantic retrieval as the primary method, then use lexical evidence
+    # to break ties between chunks with the same broad policy topic.
+    candidates = store.search_with_filter(
+        benchmark["query"], top_k=12, metadata_filter=metadata_filter
+    )
+    candidates.sort(
+        key=lambda result: (
+            lexical_overlap(benchmark["query"], result.get("content", "")),
+            result.get("score", 0.0),
+        ),
+        reverse=True,
+    )
+    return candidates[:3] if candidates else results
 
 
 def format_results(
@@ -207,6 +257,19 @@ def format_results(
     return lines, points
 
 
+def context_evaluation(
+    results: list[dict[str, Any]], benchmark: dict[str, Any]
+) -> dict[str, Any]:
+    context = "\n".join(result.get("content", "") for result in results)
+    hits = keyword_hits(context, benchmark["target_keywords"])
+    gold_docs = {result.get("metadata", {}).get("doc_id", "") for result in results}
+    return {
+        "hits": hits,
+        "all_keywords": len(hits) == len(benchmark["target_keywords"]),
+        "gold_doc": bool(gold_docs & set(benchmark["expected_docs"])),
+    }
+
+
 def run_benchmark(
     data_dir: Path, backend: str, chunk_size: int, output_path: Path
 ) -> None:
@@ -214,9 +277,8 @@ def run_benchmark(
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     embedder, backend_name, is_mock = select_embedder(backend)
     strategies = {
-        "heading": HeadingChunker(max_chars=chunk_size),
+        "heading": HeadingChunker(max_chars=chunk_size, overlap_sentences=1),
         "sentence": SentenceChunker(max_sentences_per_chunk=4),
-        "recursive": RecursiveChunker(chunk_size=chunk_size),
     }
     lines = [
         "CHECKPOINT 6 - CHUNKING RETRIEVAL BENCHMARK",
@@ -249,6 +311,7 @@ def run_benchmark(
             lines.append(f"Q{benchmark['id']}: {benchmark['query']}")
             filtered = retrieve(store, benchmark, use_filter=True)
             filtered_lines, filtered_points = format_results(filtered, benchmark)
+            context_result = context_evaluation(filtered, benchmark)
             lines.append(
                 f"  WITH_FILTER {benchmark['filter']}: total_points={filtered_points}"
             )
@@ -258,7 +321,7 @@ def run_benchmark(
                 evaluate_result(result, benchmark, rank)
                 for rank, result in enumerate(filtered, 1)
             ]
-            if not any(evaluation["answer_chunk"] for evaluation in evaluations):
+            if not context_result["gold_doc"] or not context_result["all_keywords"]:
                 available = ", ".join(
                     result.get("metadata", {}).get("doc_id", "<missing>")
                     for result in filtered
