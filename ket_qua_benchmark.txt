@@ -1,0 +1,209 @@
+CHECKPOINT 6 - CHUNKING RETRIEVAL BENCHMARK
+data_dir: data\ecommerce-return-policy
+embedding_backend: local sentence-transformers
+embedding_warning: real embedding backend selected.
+
+## Strategy: heading
+chunks_loaded: 347
+average_chunk_length: 442.89
+Q1: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong bao nhiêu ngày kể từ khi giao hàng thành công?
+  WITH_FILTER {'audience': 'buyer'}: total_points=3
+  1. score=0.751170 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#3 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=2
+  2. score=0.711396 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#2 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=1
+  3. score=0.685101 doc_id=ebay-money-back-guarantee chunk_id=ebay-money-back-guarantee#23 keywords=[] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.813876 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#6 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  2. score=0.764592 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#4 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.761561 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#8 keywords=['trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Theo chính sách Shopee, người mua có thể gửi yêu cầu trả hàng/hoàn tiền trong vòng 15 ngày kể từ khi đơn hàng được cập nhật giao hàng thành công.
+
+Q2: Người bán Shopee phải phản hồi quyết định trả hàng hoặc hoàn tiền trong bao lâu?
+  WITH_FILTER {'audience': 'both'}: total_points=2
+  1. score=0.869925 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#26 keywords=['02 ngày', 'phản hồi', 'Người Bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.812480 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#39 keywords=['phản hồi', 'Người Bán'] gold_doc=True answer_chunk=False points=0
+  3. score=0.811611 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#43 keywords=['Người Bán'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=2 changed_top3=True
+  1. score=0.869925 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#26 keywords=['02 ngày', 'phản hồi', 'Người Bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.842960 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#6 keywords=['Người Bán'] gold_doc=False answer_chunk=False points=0
+  3. score=0.820544 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#13 keywords=['phản hồi', 'Người Bán'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Người bán phải gửi phản hồi trong vòng 02 ngày lịch kể từ khi nhận được thông báo của Shopee.
+
+Q3: Người bán TikTok có thể gửi khiếu nại trong bao nhiêu ngày đối với yêu cầu trả hàng?
+  WITH_FILTER {'audience': 'seller'}: total_points=2
+  1. score=0.775720 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#6 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.746904 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#55 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.728744 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#45 keywords=[] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=2 changed_top3=False
+  1. score=0.775720 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#6 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.746904 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#55 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.728744 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#45 keywords=[] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter does not change Top-3
+  gold_answer: Đối với trả hàng gửi tại bưu cục hoặc lấy hàng, người bán có thể gửi khiếu nại trong vòng 7 ngày kể từ khi nhận hàng trả về; với trả hàng tự sắp xếp là 15 ngày.
+
+Q4: Người bán TikTok cần quay video mở kiện hàng và thể hiện những gì khi khiếu nại hàng trả về?
+  WITH_FILTER {'audience': 'seller'}: total_points=0
+  1. score=0.749550 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#28 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.711086 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#41 keywords=[] gold_doc=True answer_chunk=False points=0
+  3. score=0.706528 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#35 keywords=['video mở kiện hàng', 'kiện hàng'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.749550 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#28 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.728430 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#29 keywords=[] gold_doc=False answer_chunk=False points=0
+  3. score=0.711086 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#41 keywords=[] gold_doc=True answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Cần cung cấp video mở kiện hàng liên tục, hiển thị thông tin đơn trả hàng, hình ảnh tất cả 6 mặt của kiện hàng và quá trình mở hàng.
+
+Q5: Sau khi yêu cầu trả hàng hoàn tiền được chấp nhận, mã giảm giá Shopee được hoàn lại trong bao lâu?
+  WITH_FILTER {'audience': 'buyer'}: total_points=0
+  1. score=0.803703 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#14 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  2. score=0.790413 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#6 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.778463 doc_id=shopee-return-shipping-fee chunk_id=shopee-return-shipping-fee#10 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.809764 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#26 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  2. score=0.803703 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#14 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  3. score=0.790413 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#6 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Mã giảm giá được hoàn lại trong vòng 48 giờ, không kể thứ 7, chủ nhật và ngày lễ, kể từ khi yêu cầu được chấp nhận hoàn tiền.
+
+strategy_total_points: 7/10
+
+## Strategy: sentence
+chunks_loaded: 178
+average_chunk_length: 793.48
+Q1: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong bao nhiêu ngày kể từ khi giao hàng thành công?
+  WITH_FILTER {'audience': 'buyer'}: total_points=3
+  1. score=0.732521 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#2 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=2
+  2. score=0.730484 doc_id=ebay-money-back-guarantee chunk_id=ebay-money-back-guarantee#6 keywords=[] gold_doc=False answer_chunk=False points=0
+  3. score=0.712373 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=1
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.792684 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#4 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  2. score=0.791977 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#3 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.762587 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#5 keywords=['trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Theo chính sách Shopee, người mua có thể gửi yêu cầu trả hàng/hoàn tiền trong vòng 15 ngày kể từ khi đơn hàng được cập nhật giao hàng thành công.
+
+Q2: Người bán Shopee phải phản hồi quyết định trả hàng hoặc hoàn tiền trong bao lâu?
+  WITH_FILTER {'audience': 'both'}: total_points=0
+  1. score=0.836960 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#25 keywords=['phản hồi', 'Người Bán'] gold_doc=True answer_chunk=False points=0
+  2. score=0.770020 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#30 keywords=['Người Bán'] gold_doc=True answer_chunk=False points=0
+  3. score=0.747315 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#29 keywords=['Người Bán'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.836960 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#25 keywords=['phản hồi', 'Người Bán'] gold_doc=True answer_chunk=False points=0
+  2. score=0.833267 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#5 keywords=['phản hồi', 'Người Bán'] gold_doc=False answer_chunk=False points=0
+  3. score=0.802104 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['Người Bán'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Người bán phải gửi phản hồi trong vòng 02 ngày lịch kể từ khi nhận được thông báo của Shopee.
+
+Q3: Người bán TikTok có thể gửi khiếu nại trong bao nhiêu ngày đối với yêu cầu trả hàng?
+  WITH_FILTER {'audience': 'seller'}: total_points=2
+  1. score=0.775738 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#4 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.743216 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#9 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.698291 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#10 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=2 changed_top3=False
+  1. score=0.775738 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#4 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.743216 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#9 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.698291 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#10 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter does not change Top-3
+  gold_answer: Đối với trả hàng gửi tại bưu cục hoặc lấy hàng, người bán có thể gửi khiếu nại trong vòng 7 ngày kể từ khi nhận hàng trả về; với trả hàng tự sắp xếp là 15 ngày.
+
+Q4: Người bán TikTok cần quay video mở kiện hàng và thể hiện những gì khi khiếu nại hàng trả về?
+  WITH_FILTER {'audience': 'seller'}: total_points=0
+  1. score=0.735691 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#10 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.704544 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#22 keywords=[] gold_doc=True answer_chunk=False points=0
+  3. score=0.628601 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#19 keywords=['video mở kiện hàng', 'kiện hàng'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.735691 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#10 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.734051 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#21 keywords=[] gold_doc=False answer_chunk=False points=0
+  3. score=0.704544 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#22 keywords=[] gold_doc=True answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Cần cung cấp video mở kiện hàng liên tục, hiển thị thông tin đơn trả hàng, hình ảnh tất cả 6 mặt của kiện hàng và quá trình mở hàng.
+
+Q5: Sau khi yêu cầu trả hàng hoàn tiền được chấp nhận, mã giảm giá Shopee được hoàn lại trong bao lâu?
+  WITH_FILTER {'audience': 'buyer'}: total_points=0
+  1. score=0.743752 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#2 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  2. score=0.742277 doc_id=shopee-return-shipping-fee chunk_id=shopee-return-shipping-fee#5 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.739554 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.782859 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#25 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  2. score=0.743752 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#2 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  3. score=0.742277 doc_id=shopee-return-shipping-fee chunk_id=shopee-return-shipping-fee#5 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Mã giảm giá được hoàn lại trong vòng 48 giờ, không kể thứ 7, chủ nhật và ngày lễ, kể từ khi yêu cầu được chấp nhận hoàn tiền.
+
+strategy_total_points: 5/10
+
+## Strategy: recursive
+chunks_loaded: 309
+average_chunk_length: 456.43
+Q1: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong bao nhiêu ngày kể từ khi giao hàng thành công?
+  WITH_FILTER {'audience': 'buyer'}: total_points=3
+  1. score=0.755769 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=2
+  2. score=0.732521 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#2 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=True answer_chunk=True points=1
+  3. score=0.700725 doc_id=amazon-return-policy chunk_id=amazon-return-policy#1 keywords=[] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.778470 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#6 keywords=['trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  2. score=0.765139 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#4 keywords=['15 ngày', 'trả hàng', 'hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.763007 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#6 keywords=[] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Theo chính sách Shopee, người mua có thể gửi yêu cầu trả hàng/hoàn tiền trong vòng 15 ngày kể từ khi đơn hàng được cập nhật giao hàng thành công.
+
+Q2: Người bán Shopee phải phản hồi quyết định trả hàng hoặc hoàn tiền trong bao lâu?
+  WITH_FILTER {'audience': 'both'}: total_points=2
+  1. score=0.876586 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#22 keywords=['02 ngày', 'phản hồi', 'Người Bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.791842 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#40 keywords=['Người Bán'] gold_doc=True answer_chunk=False points=0
+  3. score=0.783313 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#44 keywords=['Người Bán'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=2 changed_top3=True
+  1. score=0.876586 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#22 keywords=['02 ngày', 'phản hồi', 'Người Bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.856593 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#5 keywords=['Người Bán'] gold_doc=False answer_chunk=False points=0
+  3. score=0.800607 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['Người Bán'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Người bán phải gửi phản hồi trong vòng 02 ngày lịch kể từ khi nhận được thông báo của Shopee.
+
+Q3: Người bán TikTok có thể gửi khiếu nại trong bao nhiêu ngày đối với yêu cầu trả hàng?
+  WITH_FILTER {'audience': 'seller'}: total_points=2
+  1. score=0.794262 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#5 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.778412 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#25 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.754740 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#44 keywords=[] gold_doc=False answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=2 changed_top3=False
+  1. score=0.794262 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#5 keywords=['15 ngày', 'khiếu nại', 'người bán'] gold_doc=True answer_chunk=True points=2
+  2. score=0.778412 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#25 keywords=['khiếu nại'] gold_doc=False answer_chunk=False points=0
+  3. score=0.754740 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#44 keywords=[] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter does not change Top-3
+  gold_answer: Đối với trả hàng gửi tại bưu cục hoặc lấy hàng, người bán có thể gửi khiếu nại trong vòng 7 ngày kể từ khi nhận hàng trả về; với trả hàng tự sắp xếp là 15 ngày.
+
+Q4: Người bán TikTok cần quay video mở kiện hàng và thể hiện những gì khi khiếu nại hàng trả về?
+  WITH_FILTER {'audience': 'seller'}: total_points=0
+  1. score=0.765879 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#26 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.687956 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#22 keywords=[] gold_doc=False answer_chunk=False points=0
+  3. score=0.683464 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#29 keywords=[] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=False
+  1. score=0.765879 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#26 keywords=[] gold_doc=False answer_chunk=False points=0
+  2. score=0.687956 doc_id=tiktok-mall-terms chunk_id=tiktok-mall-terms#22 keywords=[] gold_doc=False answer_chunk=False points=0
+  3. score=0.683464 doc_id=tiktok-return-refund chunk_id=tiktok-return-refund#29 keywords=[] gold_doc=True answer_chunk=False points=0
+  A_B_CONCLUSION: filter does not change Top-3
+  gold_answer: Cần cung cấp video mở kiện hàng liên tục, hiển thị thông tin đơn trả hàng, hình ảnh tất cả 6 mặt của kiện hàng và quá trình mở hàng.
+
+Q5: Sau khi yêu cầu trả hàng hoàn tiền được chấp nhận, mã giảm giá Shopee được hoàn lại trong bao lâu?
+  WITH_FILTER {'audience': 'buyer'}: total_points=0
+  1. score=0.788900 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#11 keywords=['hoàn tiền', 'Mã giảm giá'] gold_doc=True answer_chunk=False points=0
+  2. score=0.769856 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#5 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.755118 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#1 keywords=['hoàn tiền'] gold_doc=True answer_chunk=False points=0
+  WITHOUT_FILTER: total_points=0 changed_top3=True
+  1. score=0.788900 doc_id=shopee-return-regulation chunk_id=shopee-return-regulation#11 keywords=['hoàn tiền', 'Mã giảm giá'] gold_doc=True answer_chunk=False points=0
+  2. score=0.778278 doc_id=shopee-return-refund-policy chunk_id=shopee-return-refund-policy#22 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  3. score=0.769856 doc_id=shopee-return-claim-process chunk_id=shopee-return-claim-process#5 keywords=['hoàn tiền'] gold_doc=False answer_chunk=False points=0
+  A_B_CONCLUSION: filter changes Top-3
+  gold_answer: Mã giảm giá được hoàn lại trong vòng 48 giờ, không kể thứ 7, chủ nhật và ngày lễ, kể từ khi yêu cầu được chấp nhận hoàn tiền.
+
+strategy_total_points: 7/10
+
+## Failure cases
+- heading Q4: Top-3=[tiktok-mall-terms, tiktok-return-refund, tiktok-return-refund], expected source(s)=[tiktok-return-refund]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- heading Q5: Top-3=[shopee-return-regulation, shopee-return-claim-process, shopee-return-shipping-fee], expected source(s)=[shopee-return-regulation]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- sentence Q2: Top-3=[shopee-return-refund-policy, shopee-return-refund-policy, shopee-return-refund-policy], expected source(s)=[shopee-return-refund-policy]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- sentence Q4: Top-3=[tiktok-mall-terms, tiktok-return-refund, tiktok-return-refund], expected source(s)=[tiktok-return-refund]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- sentence Q5: Top-3=[shopee-return-regulation, shopee-return-shipping-fee, shopee-return-regulation], expected source(s)=[shopee-return-regulation]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- recursive Q4: Top-3=[tiktok-mall-terms, tiktok-mall-terms, tiktok-return-refund], expected source(s)=[tiktok-return-refund]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+- recursive Q5: Top-3=[shopee-return-regulation, shopee-return-claim-process, shopee-return-regulation], expected source(s)=[shopee-return-regulation]. Cause: gold document is in Top-3 but the retrieved section lacks the answer keywords. Fix: add overlap or adjust chunk boundaries so the numeric/detail evidence stays with its topic.
+

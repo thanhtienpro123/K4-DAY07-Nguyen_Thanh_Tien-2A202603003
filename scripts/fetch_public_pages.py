@@ -22,8 +22,33 @@ from urllib.robotparser import RobotFileParser
 
 
 DEFAULT_USER_AGENT = "Day7DataFoundationsCourse/1.0 (+educational-lab)"
-MANIFEST_FIELDS = ["doc_id", "file_path", "title", "source_url", "retrieved_at", "document_version", "license_or_permission"]
-BLOCK_TAGS = {"p", "br", "li", "h1", "h2", "h3", "h4", "h5", "h6", "tr", "div", "section", "article"}
+MANIFEST_FIELDS = [
+    "doc_id",
+    "file_path",
+    "title",
+    "source_url",
+    "retrieved_at",
+    "document_version",
+    "audience",
+    "category",
+    "language",
+    "license_or_permission",
+]
+BLOCK_TAGS = {
+    "p",
+    "br",
+    "li",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "tr",
+    "div",
+    "section",
+    "article",
+}
 SKIP_TAGS = {"script", "style", "nav", "footer", "header", "noscript", "svg", "iframe"}
 SAFE_METADATA_KEY = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -92,7 +117,9 @@ def load_rows(path: Path) -> list[dict[str, str]]:
             raise ValueError("Input CSV must have a 'url' column.")
         rows = []
         for number, row in enumerate(reader, start=2):
-            cleaned = {key.strip(): (value or "").strip() for key, value in row.items() if key}
+            cleaned = {
+                key.strip(): (value or "").strip() for key, value in row.items() if key
+            }
             if not cleaned.get("url"):
                 print(f"Skipping row {number}: missing url", file=sys.stderr)
             else:
@@ -119,7 +146,13 @@ def robots_allowed(url: str, user_agent: str) -> bool:
 
 
 def fetch(url: str, user_agent: str, timeout: float) -> tuple[str, str]:
-    request = Request(url, headers={"User-Agent": user_agent, "Accept": "text/html,text/plain;q=0.9,*/*;q=0.1"})
+    request = Request(
+        url,
+        headers={
+            "User-Agent": user_agent,
+            "Accept": "text/html,text/plain;q=0.9,*/*;q=0.1",
+        },
+    )
     with urlopen(request, timeout=timeout) as response:  # noqa: S310 - URL is supplied by the course user.
         content_type = response.headers.get_content_type().lower()
         if content_type not in {"text/html", "text/plain"}:
@@ -138,52 +171,97 @@ def extract_content(body: str) -> tuple[str, str]:
 def existing_manifest(path: Path) -> dict[str, dict[str, str]]:
     if not path.exists():
         return {}
-    with path.open(encoding="utf-8", newline="") as manifest_file:
-        return {row["doc_id"]: row for row in csv.DictReader(manifest_file) if row.get("doc_id")}
+    with path.open(encoding="utf-8-sig", newline="") as manifest_file:
+        return {
+            row["doc_id"]: row
+            for row in csv.DictReader(manifest_file)
+            if row.get("doc_id")
+        }
 
 
 def write_manifest(path: Path, records: dict[str, dict[str, str]]) -> None:
-    with path.open("w", encoding="utf-8", newline="") as manifest_file:
+    with path.open("w", encoding="utf-8-sig", newline="") as manifest_file:
         writer = csv.DictWriter(manifest_file, fieldnames=MANIFEST_FIELDS)
         writer.writeheader()
         for doc_id in sorted(records):
-            writer.writerow({field: records[doc_id].get(field, "") for field in MANIFEST_FIELDS})
+            writer.writerow(
+                {field: records[doc_id].get(field, "") for field in MANIFEST_FIELDS}
+            )
 
 
 def markdown_document(metadata: dict[str, str], content: str) -> str:
-    front_matter = "\n".join(f"{key}: {yaml_value(value)}" for key, value in metadata.items())
+    front_matter = "\n".join(
+        f"{key}: {yaml_value(value)}" for key, value in metadata.items()
+    )
     return f"---\n{front_matter}\n---\n\n# {metadata['title']}\n\n{content}\n"
 
 
 def build_metadata(row: dict[str, str], final_url: str, title: str) -> dict[str, str]:
-    document_id = slugify(row.get("doc_id") or Path(urlparse(final_url).path).stem or title)
+    document_id = slugify(
+        row.get("doc_id") or Path(urlparse(final_url).path).stem or title
+    )
     metadata = {
         "doc_id": document_id,
         "title": row.get("title") or title or document_id.replace("-", " ").title(),
         "source_url": final_url,
         "retrieved_at": date.today().isoformat(),
         "document_version": row.get("document_version") or "not-stated",
+        "audience": row.get("audience") or "buyer",
+        "category": row.get("category") or "general",
+        "language": row.get("language") or "en",
     }
     excluded = {"url", "doc_id", "title", "document_version", "license_or_permission"}
-    metadata.update({key: value for key, value in row.items() if key not in excluded and value and SAFE_METADATA_KEY.match(key)})
+    metadata.update(
+        {
+            key: value
+            for key, value in row.items()
+            if key not in excluded and value and SAFE_METADATA_KEY.match(key)
+        }
+    )
     return metadata
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fetch a small list of allowed public pages into Markdown.")
+    parser = argparse.ArgumentParser(
+        description="Fetch a small list of allowed public pages into Markdown."
+    )
     parser.add_argument("input_csv", type=Path, help="CSV with a required 'url' column")
-    parser.add_argument("--output-dir", type=Path, required=True, help="Directory for .md files and sources.csv")
-    parser.add_argument("--delay", type=float, default=1.0, help="Minimum seconds between requests (default: 1.0)")
-    parser.add_argument("--timeout", type=float, default=20.0, help="Per-request timeout in seconds (default: 20)")
-    parser.add_argument("--user-agent", default=DEFAULT_USER_AGENT, help="HTTP User-Agent")
-    parser.add_argument("--overwrite", action="store_true", help="Replace an existing Markdown file with the same doc_id")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        required=True,
+        help="Directory for .md files and sources.csv",
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=1.0,
+        help="Minimum seconds between requests (default: 1.0)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=20.0,
+        help="Per-request timeout in seconds (default: 20)",
+    )
+    parser.add_argument(
+        "--user-agent", default=DEFAULT_USER_AGENT, help="HTTP User-Agent"
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace an existing Markdown file with the same doc_id",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     if args.delay < 1:
-        print("--delay must be at least 1 second to respect source websites.", file=sys.stderr)
+        print(
+            "--delay must be at least 1 second to respect source websites.",
+            file=sys.stderr,
+        )
         return 2
     if not args.input_csv.is_file():
         print(f"Input file not found: {args.input_csv}", file=sys.stderr)
@@ -209,21 +287,41 @@ def main() -> int:
             final_url, body = fetch(url, args.user_agent, args.timeout)
             title, content = extract_content(body)
             if len(content) < 80:
-                raise ValueError("extracted content is too short; use another source or clean it manually")
+                raise ValueError(
+                    "extracted content is too short; use another source or clean it manually"
+                )
             metadata = build_metadata(row, final_url, title)
             output_path = args.output_dir / f"{metadata['doc_id']}.md"
             if output_path.exists() and not args.overwrite:
-                raise FileExistsError(f"{output_path} exists (use --overwrite to replace it)")
-            output_path.write_text(markdown_document(metadata, content), encoding="utf-8")
+                raise FileExistsError(
+                    f"{output_path} exists (use --overwrite to replace it)"
+                )
+            output_path.write_text(
+                markdown_document(metadata, content), encoding="utf-8"
+            )
             manifest[metadata["doc_id"]] = {
-                "doc_id": metadata["doc_id"], "file_path": str(output_path), "title": metadata["title"],
-                "source_url": metadata["source_url"], "retrieved_at": metadata["retrieved_at"],
+                "doc_id": metadata["doc_id"],
+                "file_path": str(output_path),
+                "title": metadata["title"],
+                "source_url": metadata["source_url"],
+                "retrieved_at": metadata["retrieved_at"],
                 "document_version": metadata["document_version"],
-                "license_or_permission": row.get("license_or_permission") or "public-source",
+                "audience": metadata.get("audience", "buyer"),
+                "category": metadata.get("category", "general"),
+                "language": metadata.get("language", "en"),
+                "license_or_permission": row.get("license_or_permission")
+                or "public-source",
             }
             successful += 1
             print(f"Saved {output_path}")
-        except (HTTPError, URLError, TimeoutError, UnicodeError, ValueError, OSError) as error:
+        except (
+            HTTPError,
+            URLError,
+            TimeoutError,
+            UnicodeError,
+            ValueError,
+            OSError,
+        ) as error:
             failed += 1
             print(f"Skipping {url}: {error}", file=sys.stderr)
     write_manifest(manifest_path, manifest)
